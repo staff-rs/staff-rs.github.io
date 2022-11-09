@@ -1,19 +1,33 @@
-import("../pkg/index.js").catch(console.error);
-
-
-const Piano = () => {
-    let keys = [];
-    for (var i = 0; i < 12; i++) {
-        console.log(i);
-        keys.push(<li>{i}</li>);
-    }
-    console.log(keys);
-    return (<ul>{keys}</ul>);
-};
-
-
+import React, { useState } from "react";
+import { notes } from "../pkg/index.js";
+import ReactDOM from "react-dom";
 
 const e = React.createElement;
-const domContainer = document.querySelector('#piano');
+
+const Piano = () => {
+  const [selected, setSelected] = useState([]);
+
+  let keys = notes().map((note) => {
+    const midi = note.midi();
+    const isSelected =
+      selected.find((selectedNote) => selectedNote.midi() == midi) != null;
+    
+    return (
+      <li
+        className={isSelected ? "selected" : ""}
+        onClick={() => {
+          if (!isSelected) {
+            setSelected([note, ...selected]);
+          }
+        }}
+      >
+        {note.name()}
+      </li>
+    );
+  });
+  return <ul>{keys}</ul>;
+};
+
+const domContainer = document.querySelector("#piano");
 const root = ReactDOM.createRoot(domContainer);
 root.render(e(Piano));

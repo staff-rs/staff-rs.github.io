@@ -1,7 +1,9 @@
-use staff::Note;
+use staff::{
+    midi::{MidiNote, Octave},
+    Pitch,
+};
 use wasm_bindgen::prelude::*;
 use web_sys::console;
-
 
 // When the `wee_alloc` feature is enabled, this uses `wee_alloc` as the global
 // allocator.
@@ -11,19 +13,38 @@ use web_sys::console;
 #[global_allocator]
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
+#[wasm_bindgen]
+pub struct Note {
+    midi: MidiNote,
+}
+
+#[wasm_bindgen]
+impl Note {
+    pub fn name(&self) -> String {
+        self.midi.to_string()
+    }
+
+    pub fn midi(&self) -> u8 {
+        self.midi.into_byte()
+    }
+}
+
+#[wasm_bindgen]
+pub fn notes() -> Box<[JsValue]> {
+    let start = MidiNote::new(Pitch::C, Octave::FOUR).into_byte();
+    let end = MidiNote::new(Pitch::B, Octave::SIX).into_byte();
+    (start..end)
+        .map(|b| {
+            let midi_note = MidiNote::from_byte(b);
+            let note = Note { midi: midi_note };
+            note.into()
+        })
+        .collect::<Vec<_>>()
+        .into_boxed_slice()
+}
 
 // This is like the `main` function, except for JavaScript.
 #[wasm_bindgen(start)]
 pub fn main_js() -> Result<(), JsValue> {
-    // This provides better error messages in debug mode.
-    // It's disabled in release mode so it doesn't bloat up the file size.
-    #[cfg(debug_assertions)]
-    console_error_panic_hook::set_once();
-
-
-    let note: Note = "C##".parse().unwrap();
-    // Your code goes here!
-    console::log_1(&JsValue::from_str(&note.to_string()));
-
     Ok(())
 }
