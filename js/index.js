@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { notes } from "../pkg/index.js";
+import { notes, chord } from "../pkg/index.js";
 import ReactDOM from "react-dom";
 
 const e = React.createElement;
@@ -14,18 +14,27 @@ const Piano = () => {
     
     return (
       <li
-        className={isSelected ? "selected" : ""}
+        data-is-selected={isSelected}
+        data-is-natural={note.is_natural()}
         onClick={() => {
           if (!isSelected) {
             setSelected([note, ...selected]);
+          } else {
+            setSelected(selected.filter(selectedNote => selectedNote.midi() != midi))
           }
         }}
-      >
-        {note.name()}
-      </li>
+     />
     );
   });
-  return <ul>{keys}</ul>;
+
+  const chordName = chord(selected.map(note => note.midi()));
+  
+  return (
+    <div id="chord">
+        <h4>{chordName}</h4>
+        <ul>{keys}</ul>
+    </div>
+  );
 };
 
 const domContainer = document.querySelector("#piano");
