@@ -4,51 +4,87 @@
 }
 
 li {
-    list-style: none;
+  list-style: none;
 }
 
 html {
-    color: #fff;
-    background: #222;
-    font-family: monospace;
+  color: #fff;
+  background: #222;
+  font-family: monospace;
 }
 
 #chord {
   text-align: center;
 }
 
-#chord h4 {
-  font-size: 4em;
+#chord form {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+#chord input {
+    padding: 10px 20px;
+    box-shadow: none;
+    outline: none;
+    color: #fff;
+}
+
+#chord input[type = "submit"] {
+    padding: 10px 60px;
+    font-size: 1.1em;
+    background: #2f8be6;
+    border: none;
+    cursor: pointer;
+    border-radius: 20px;
+}
+
+#chord #name {
+  width: 100%;
+  max-width: 300px;
+  padding: 10px 20px;
+  font-size: 1.6em;  
+  background: none;
+  border: 2px solid #444;
+  border-radius: 5px;
+}
+
+#chord #name:focus {
+  border: 2px solid #2f8be6;
+}
+#chord #name::selection {
+  display: none;
 }
 
 #piano {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 #piano ul {
-    margin-top: 50px;
+  display: flex;
+  flex-direction: "row";
+  margin-top: 50px;
 }
 
 #piano ul li {
-    position: relative;
-    width: 30px;
-    height: 100px;
-    float: left;
-    margin-right: 2px;
-    background: #fff;
+  position: relative;
+  width: 30px;
+  height: 100px;
+  border: 2px solid #222;
+  background: #fff;
 }
 
-#piano ul li[data-is-natural = false] {
-    width: 15px;
-    height: 80px;
-    margin-left: -10px;
-    margin-right: -10px;
-    background: #000;
-    z-index: 2;
+#piano ul li[data-is-natural="false"] {
+  width: 15px;
+  height: 80px;
+  margin-left: -10px;
+  margin-right: -10px;
+  background: #000;
+  z-index: 2;
 }
 
-#piano ul li[data-is-selected = true]{
-    background: #2f8be6;
-} 
+#piano ul li[data-is-selected="true"] {
+  background: #2f8be6;
+}

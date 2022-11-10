@@ -36,7 +36,7 @@ impl Note {
 #[wasm_bindgen]
 pub fn notes() -> Box<[JsValue]> {
     let start = MidiNote::new(Pitch::C, Octave::FOUR).into_byte();
-    let end = MidiNote::new(Pitch::B, Octave::FIVE).into_byte();
+    let end = MidiNote::new(Pitch::B, Octave::SIX).into_byte();
     (start..=end)
         .map(|b| {
             let midi_note = MidiNote::from_byte(b);
@@ -56,6 +56,16 @@ pub fn chord(notes: &[u8]) -> String {
     } else {
         String::from("None")
     }
+}
+
+#[wasm_bindgen]
+pub fn from_name(name: &str) -> Box<[JsValue]> {
+    let chord: Chord = name.parse().unwrap();
+    let midi_notes: Vec<_> = chord
+        .midi_notes(Octave::FOUR)
+        .map(|midi_note| JsValue::from(Note { midi: midi_note }))
+        .collect();
+    midi_notes.into_boxed_slice()
 }
 
 // This is like the `main` function, except for JavaScript.

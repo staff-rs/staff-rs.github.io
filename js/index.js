@@ -1,38 +1,54 @@
 import React, { useState } from "react";
-import { notes, chord } from "../pkg/index.js";
+import { notes, chord, from_name } from "../pkg/index.js";
 import ReactDOM from "react-dom";
 
 const e = React.createElement;
 
 const Piano = () => {
   const [selected, setSelected] = useState([]);
+  const [name, setName] = useState("");
 
   let keys = notes().map((note) => {
     const midi = note.midi();
     const isSelected =
       selected.find((selectedNote) => selectedNote.midi() == midi) != null;
-    
+
     return (
       <li
         data-is-selected={isSelected}
         data-is-natural={note.is_natural()}
         onClick={() => {
+          let array;
           if (!isSelected) {
-            setSelected([note, ...selected]);
+            array = [note, ...selected];
           } else {
-            setSelected(selected.filter(selectedNote => selectedNote.midi() != midi))
+            array = selected.filter(
+              (selectedNote) => selectedNote.midi() != midi
+            );
           }
+          setSelected(array);
+          setName(chord(array.map((note) => note.midi())));
         }}
-     />
+      />
     );
   });
 
-  const chordName = chord(selected.map(note => note.midi()));
-  
   return (
     <div id="chord">
-        <h4>{chordName}</h4>
-        <ul>{keys}</ul>
+      <form>
+        <input
+          id="name"
+          type="text"
+          placeholder="Chord name"
+          value={name}
+          onInput={(e) => {
+            setName(e.target.value);
+            setSelected(from_name(e.target.value));
+          }}
+        />
+        <input type="submit" value="Add" />
+      </form>
+      <ul>{keys}</ul>
     </div>
   );
 };
