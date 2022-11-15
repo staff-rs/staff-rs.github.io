@@ -27,6 +27,7 @@ const Piano = () => {
             );
           }
           setSelected(array);
+          console.log(array.map((note) => note.midi()));
           setName(chord(array.map((note) => note.midi())));
         }}
       />
@@ -43,7 +44,9 @@ const Piano = () => {
           value={name}
           onInput={(e) => {
             setName(e.target.value);
-            setSelected(from_name(e.target.value));
+            const chord = from_name(e.target.value);
+           window.history.replaceState({}, "", chord.url())
+            setSelected(chord.midi_notes());
           }}
         />
         <input type="submit" value="Add" />

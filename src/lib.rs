@@ -3,7 +3,6 @@ use staff::{
     Chord, Pitch,
 };
 use wasm_bindgen::prelude::*;
-use web_sys::console;
 
 // When the `wee_alloc` feature is enabled, this uses `wee_alloc` as the global
 // allocator.
@@ -12,6 +11,31 @@ use web_sys::console;
 #[cfg(feature = "wee_alloc")]
 #[global_allocator]
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
+
+#[wasm_bindgen]
+pub struct WebChord {
+    chord: Chord,
+    midi_notes: Box<[JsValue]>,
+}
+
+#[wasm_bindgen]
+impl WebChord {
+    pub fn url(&self) -> String {
+        let root = self.chord.root.into_byte();
+        let bass = self.chord.bass.map(Into::into).unwrap_or(0);
+        let is_inversion = if self.chord.is_inversion {
+            1
+        } else {
+            0
+        };
+        let intervals = self.chord.clone().intervals.bits;
+        format!("{root}-{bass}-{is_inversion}-{intervals}")
+    }
+
+    pub fn midi_notes(&self) -> Box<[JsValue]>{
+        self.midi_notes.clone()
+    }
+}
 
 #[wasm_bindgen]
 pub struct Note {
@@ -51,7 +75,7 @@ pub fn notes() -> Box<[JsValue]> {
 pub fn chord(notes: &[u8]) -> String {
     if notes.len() > 2 {
         let midi_notes: MidiSet = notes.iter().copied().map(MidiNote::from).collect();
-        let chord = Chord::from_midi(midi_notes.clone().next().unwrap(), midi_notes);
+        let chord = Chord::from_midi(midi_notes.clone().next().unwrap(), midi_notes).unwrap();
         chord.to_string()
     } else {
         String::from("None")
@@ -59,13 +83,17 @@ pub fn chord(notes: &[u8]) -> String {
 }
 
 #[wasm_bindgen]
-pub fn from_name(name: &str) -> Box<[JsValue]> {
+pub fn from_name(name: &str) -> WebChord {
     let chord: Chord = name.parse().unwrap();
     let midi_notes: Vec<_> = chord
-        .midi_notes(Octave::FOUR)
+        .clone()
+        .into_iter()
         .map(|midi_note| JsValue::from(Note { midi: midi_note }))
         .collect();
-    midi_notes.into_boxed_slice()
+    WebChord {
+        chord,
+        midi_notes: midi_notes.into_boxed_slice(),
+    }
 }
 
 // This is like the `main` function, except for JavaScript.
