@@ -14,7 +14,6 @@ static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
 #[wasm_bindgen]
 pub struct WebChord {
-    chord: Chord,
     midi_notes: Box<[JsValue]>,
 }
 
@@ -79,7 +78,6 @@ pub fn from_name(name: &str) -> WebChord {
         .map(|midi_note| JsValue::from(Note { midi: midi_note }))
         .collect();
     WebChord {
-        chord,
         midi_notes: midi_notes.into_boxed_slice(),
     }
 }
