@@ -20,19 +20,7 @@ pub struct WebChord {
 
 #[wasm_bindgen]
 impl WebChord {
-    pub fn url(&self) -> String {
-        let root = self.chord.root.into_byte();
-        let bass = self.chord.bass.map(Into::into).unwrap_or(0);
-        let is_inversion = if self.chord.is_inversion {
-            1
-        } else {
-            0
-        };
-        let intervals = self.chord.clone().intervals.bits;
-        format!("{root}-{bass}-{is_inversion}-{intervals}")
-    }
-
-    pub fn midi_notes(&self) -> Box<[JsValue]>{
+    pub fn midi_notes(&self) -> Box<[JsValue]> {
         self.midi_notes.clone()
     }
 }
@@ -72,14 +60,14 @@ pub fn notes() -> Box<[JsValue]> {
 }
 
 #[wasm_bindgen]
-pub fn chord(notes: &[u8]) -> String {
-    if notes.len() > 2 {
-        let midi_notes: MidiSet = notes.iter().copied().map(MidiNote::from).collect();
-        let chord = Chord::from_midi(midi_notes.clone().next().unwrap(), midi_notes).unwrap();
-        chord.to_string()
-    } else {
-        String::from("None")
+pub fn chord(notes: &[u8]) -> Option<String> {
+    if notes.len() <= 1 {
+        return None;
     }
+
+    let midi_notes: MidiSet = notes.iter().copied().map(MidiNote::from).collect();
+    let chord = Chord::from_midi(midi_notes.clone().next().unwrap(), midi_notes).unwrap();
+    Some(chord.to_string())
 }
 
 #[wasm_bindgen]

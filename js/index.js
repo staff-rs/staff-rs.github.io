@@ -27,8 +27,13 @@ const Piano = () => {
             );
           }
           setSelected(array);
-          console.log(array.map((note) => note.midi()));
-          setName(chord(array.map((note) => note.midi())));
+          const name = chord(array.map((note) => note.midi()));
+          if (name != null) {
+            setName(name);
+          } else {
+            setName("");
+          }
+        
         }}
       />
     );
@@ -36,21 +41,17 @@ const Piano = () => {
 
   return (
     <div id="chord">
-      <form>
-        <input
-          id="name"
-          type="text"
-          placeholder="Chord name"
-          value={name}
-          onInput={(e) => {
-            setName(e.target.value);
-            const chord = from_name(e.target.value);
-           window.history.replaceState({}, "", chord.url())
-            setSelected(chord.midi_notes());
-          }}
-        />
-        <input type="submit" value="Add" />
-      </form>
+      <input
+        id="name"
+        type="text"
+        placeholder="Chord name"
+        value={name}
+        onInput={(e) => {
+          setName(e.target.value);
+          const chord = from_name(e.target.value);
+          setSelected(chord.midi_notes());
+        }}
+      />
       <ul>{keys}</ul>
     </div>
   );
