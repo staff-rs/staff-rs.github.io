@@ -5,7 +5,9 @@
   "scripts": {
     "build": "rimraf dist pkg && webpack",
     "start": "rimraf dist pkg && webpack serve",
-    "test": "cargo test && wasm-pack test --headless"
+    "test": "cargo test && wasm-pack test --headless",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d dist"
   },
   "devDependencies": {
     "@babel/cli": "^7.19.3",
@@ -15,6 +17,7 @@
     "@wasm-tool/wasm-pack-plugin": "^1.1.0",
     "babel-loader": "^9.1.0",
     "copy-webpack-plugin": "^5.0.3",
+    "gh-pages": "^4.0.0",
     "rimraf": "^3.0.2",
     "webpack": "^5.75.0",
     "webpack-cli": "^4.10.0",
