@@ -1,24 +1,16 @@
 import React, { useRef, useState } from "react";
-import {
-  fretboard_new,
-  fretboard_grid,
-  fretboard_fretted,
-  fretboard_pos,
-  fretted_rectangle,
-  fretboard_render_fretted,
-  fretboard_extend_pos,
-} from "../pkg/index.js";
+import { Fretboard } from "../pkg/index.js";
 import ReactDOM from "react-dom";
 
 function App() {
   const width = 300;
   const height = 300;
 
-  const [fretboard, setFretboard] = useState(fretboard_new(width, height));
+  const [fretboard, setFretboard] = useState(new Fretboard(width, height));
 
-  const [lines, setLines] = useState(fretboard_grid(fretboard));
+  const [lines, setLines] = useState(fretboard.grid());
 
-  const [fretted, setFretted] = useState(fretboard_fretted(fretboard));
+  const [fretted, setFretted] = useState(fretboard.fretted());
 
   const [isMouseDown, setIsMouseDown] = useState(false);
   const [currentFret, setCurrentFret] = useState(null);
@@ -38,19 +30,23 @@ function App() {
 
         let fret;
         if (!isMouseDown) {
-          fret = fretboard_pos(fretboard, x, y);
+          fret = fretboard.pos(x, y);
         } else {
-          fret = fretboard_extend_pos(fretboard, currentFret, x, y);
+          fret = fretboard.extend_pos(currentFret, x, y);
         }
 
         setCurrentFret(fret);
-        setMarker(fretboard_render_fretted(fretboard, fret));
+        setMarker(fretboard.render_fretted(fret));
       }}
       onMouseDown={(event) => {
         setIsMouseDown(true);
       }}
       onMouseUp={(event) => {
         setIsMouseDown(false);
+
+        fretboard.push(currentFret);
+        setFretted(fretboard.fretted());
+        setCurrentFret(null);
       }}
     >
       {lines.map((line) => (
@@ -72,8 +68,7 @@ function App() {
 }
 
 function Fretted({ fretted, className }) {
-  const rectangle = fretted_rectangle(fretted);
-
+  const rectangle = fretted.rectangle;
   if (rectangle != null) {
     return (
       <rect
@@ -87,7 +82,8 @@ function Fretted({ fretted, className }) {
       />
     );
   }
-  const lines = fretted.lines();
+
+  const lines = fretted.lines;
   if (lines != null) {
     return lines.map((line) => (
       <line
