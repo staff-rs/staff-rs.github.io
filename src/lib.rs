@@ -1,7 +1,4 @@
-use staff::{
-    midi::{MidiNote, MidiSet, Octave},
-    Chord, Pitch,
-};
+use staff::render::fretboard::{self, Fretboard};
 use wasm_bindgen::prelude::*;
 
 // When the `wee_alloc` feature is enabled, this uses `wee_alloc` as the global
@@ -13,77 +10,76 @@ use wasm_bindgen::prelude::*;
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
 #[wasm_bindgen]
-pub struct WebChord {
-    midi_notes: Box<[JsValue]>,
+pub struct Line {
+    pub x1: f64,
+    pub y1: f64,
+    pub x2: f64,
+    pub y2: f64,
+    pub stroke_width: f64,
 }
 
-#[wasm_bindgen]
-impl WebChord {
-    pub fn midi_notes(&self) -> Box<[JsValue]> {
-        self.midi_notes.clone()
+impl Line {
+    pub fn new(x1: f64, y1: f64, x2: f64, y2: f64, stroke_width: f64) -> Self {
+        Self {
+            x1,
+            y1,
+            x2,
+            y2,
+            stroke_width,
+        }
     }
 }
 
 #[wasm_bindgen]
-pub struct Note {
-    midi: MidiNote,
-}
+pub fn render(width: f64, height: f64) -> Box<[JsValue]> {
+    let fretboard = Fretboard::builder().build(width, height);
 
-#[wasm_bindgen]
-impl Note {
-    pub fn name(&self) -> String {
-        self.midi.to_string()
+    let x = 0.;
+    let mut y = 0.;
+    let stroke_width = 2.;
+    let mut lines = Vec::new();
+
+    for idx in 0..fretboard.builder.strings {
+        let line_x = x + fretboard.fret_width * idx as f64;
+        lines.push(
+            Line::new(
+                line_x,
+                y + fretboard.fret_height,
+                line_x,
+                fretboard.height - fretboard.builder.padding,
+                stroke_width,
+            )
+            .into(),
+        );
     }
 
-    pub fn midi(&self) -> u8 {
-        self.midi.into_byte()
+    let line_y = y + fretboard.fret_height;
+    lines.push(
+        Line::new(
+            x - stroke_width / 2.,
+            line_y,
+            x + (fretboard.fret_width * (fretboard.builder.strings - 1) as f64) + stroke_width / 2.,
+            line_y,
+            stroke_width * 2.,
+        )
+        .into(),
+    );
+    y += stroke_width;
+
+    for idx in 1..fretboard.builder.fret_count {
+        let line_y = line_y + fretboard.fret_height * idx as f64;
+        lines.push(
+            Line::new(
+                x - stroke_width / 2.,
+                line_y,
+                x + fretboard.fret_width * (fretboard.builder.strings - 1) as f64
+                    + stroke_width / 2.,
+                line_y,
+                stroke_width,
+            )
+            .into(),
+        );
     }
 
-    pub fn is_natural(&self) -> bool {
-        self.midi.pitch().is_natural()
-    }
-}
-
-#[wasm_bindgen]
-pub fn notes() -> Box<[JsValue]> {
-    let start = MidiNote::new(Pitch::C, Octave::FOUR).into_byte();
-    let end = MidiNote::new(Pitch::B, Octave::SIX).into_byte();
-    (start..=end)
-        .map(|b| {
-            let midi_note = MidiNote::from_byte(b);
-            let note = Note { midi: midi_note };
-            note.into()
-        })
-        .collect::<Vec<_>>()
-        .into_boxed_slice()
-}
-
-#[wasm_bindgen]
-pub fn chord(notes: &[u8]) -> Option<String> {
-    if notes.len() <= 1 {
-        return None;
-    }
-
-    let midi_notes: MidiSet = notes.iter().copied().map(MidiNote::from).collect();
-    let chord = Chord::from_midi(midi_notes.clone().next().unwrap(), midi_notes).unwrap();
-    Some(chord.to_string())
-}
-
-#[wasm_bindgen]
-pub fn from_name(name: &str) -> WebChord {
-    let chord: Chord = name.parse().unwrap();
-    let midi_notes: Vec<_> = chord
-        .clone()
-        .into_iter()
-        .map(|midi_note| JsValue::from(Note { midi: midi_note }))
-        .collect();
-    WebChord {
-        midi_notes: midi_notes.into_boxed_slice(),
-    }
-}
-
-// This is like the `main` function, except for JavaScript.
-#[wasm_bindgen(start)]
-pub fn main_js() -> Result<(), JsValue> {
-    Ok(())
+    lines.into_boxed_slice()
 }
