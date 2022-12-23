@@ -6,11 +6,12 @@ import {
   fretboard_pos,
   fretted_rectangle,
   fretboard_render_fretted,
+  fretboard_extend_pos,
 } from "../pkg/index.js";
 import ReactDOM from "react-dom";
 
 function App() {
-  const width = 500;
+  const width = 300;
   const height = 300;
 
   const [fretboard, setFretboard] = useState(fretboard_new(width, height));
@@ -19,9 +20,9 @@ function App() {
 
   const [fretted, setFretted] = useState(fretboard_fretted(fretboard));
 
-  const [currentPos, setCurrentPos] = useState(null);
+  const [isMouseDown, setIsMouseDown] = useState(false);
+  const [currentFret, setCurrentFret] = useState(null);
   const [marker, setMarker] = useState(null);
-
 
   const currentRef = useRef(null);
 
@@ -34,9 +35,22 @@ function App() {
         const boundingBox = currentRef.current.getBoundingClientRect();
         const x = event.clientX - boundingBox.left;
         const y = event.clientY - boundingBox.top;
-        const pos = fretboard_pos(fretboard, x, y);
-        setCurrentPos(pos);
-        setMarker(fretboard_render_fretted(fretboard, pos));
+
+        let fret;
+        if (!isMouseDown) {
+          fret = fretboard_pos(fretboard, x, y);
+        } else {
+          fret = fretboard_extend_pos(fretboard, currentFret, x, y);
+        }
+
+        setCurrentFret(fret);
+        setMarker(fretboard_render_fretted(fretboard, fret));
+      }}
+      onMouseDown={(event) => {
+        setIsMouseDown(true);
+      }}
+      onMouseUp={(event) => {
+        setIsMouseDown(false);
       }}
     >
       {lines.map((line) => (
@@ -63,7 +77,7 @@ function Fretted({ fretted, className }) {
   if (rectangle != null) {
     return (
       <rect
-      className={className}
+        className={className}
         x={rectangle.x}
         y={rectangle.y}
         width={rectangle.width}
@@ -72,6 +86,19 @@ function Fretted({ fretted, className }) {
         fill="#000"
       />
     );
+  }
+  const lines = fretted.lines();
+  if (lines != null) {
+    return lines.map((line) => (
+      <line
+        x1={line.x1}
+        y1={line.y1}
+        x2={line.x2}
+        y2={line.y2}
+        strokeWidth={line.stroke_width}
+        stroke={"#000"}
+      />
+    ));
   }
 }
 

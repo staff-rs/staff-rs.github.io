@@ -17,6 +17,10 @@ html {
   align-items: center;
 }
 
+svg {
+  cursor: pointer;
+}
+
 rect {
   transition: all 100ms;
 }

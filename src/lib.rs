@@ -37,6 +37,13 @@ pub struct Fretted {
     lines: Option<Box<[JsValue]>>,
 }
 
+#[wasm_bindgen]
+impl Fretted {
+    pub fn lines(&self) -> Option<Box<[JsValue]>> {
+        self.lines.clone()
+    }
+}
+
 impl From<fretboard::Fretted> for Fretted {
     fn from(fretted: fretboard::Fretted) -> Self {
         match fretted {
@@ -64,7 +71,13 @@ pub fn fretboard_fretted(fretboard: &Fretboard) -> Box<[JsValue]> {
         let fretted = match fretted {
             fretboard::Fretted::Cross { lines } => Fretted {
                 rectangle: None,
-                lines: Some(Box::new([])),
+                lines: Some(
+                    lines
+                        .iter()
+                        .map(|line| line.clone().into())
+                        .collect::<Vec<_>>()
+                        .into_boxed_slice(),
+                ),
             },
             fretboard::Fretted::Rectangle(rectangle) => Fretted {
                 rectangle: Some(rectangle),
@@ -78,28 +91,26 @@ pub fn fretboard_fretted(fretboard: &Fretboard) -> Box<[JsValue]> {
 }
 
 #[wasm_bindgen]
-pub struct Pos {
-    pub string: u8,
-    pub fret: u8,
-}
-
-#[wasm_bindgen]
-pub fn fretboard_pos(fretboard: &Fretboard, x: f64, y: f64) -> Option<Pos> {
+pub fn fretboard_pos(fretboard: &Fretboard, x: f64, y: f64) -> Option<Fret> {
     fretboard
         .inner
         .pos(x, y)
-        .map(|(string, fret)| Pos { string, fret })
+        .map(|(string, fret)| Fret::new(fret, string..string + 1))
 }
 
 #[wasm_bindgen]
-pub fn fretboard_render_fretted(fretboard: &Fretboard, pos: &Pos) -> Fretted {
+pub fn fretboard_extend_pos(fretboard: &Fretboard, fret: &Fret, x: f64, y: f64) -> Option<Fret> {
+    fretboard
+        .inner
+        .pos(x, y)
+        .map(|(string, pos)| Fret::new(pos, fret.strings.start..string + 1))
+}
+
+#[wasm_bindgen]
+pub fn fretboard_render_fretted(fretboard: &Fretboard, fret: &Fret) -> Fretted {
     let mut fretted = None;
-    fretboard.inner.render_single_fretted(
-        0.,
-        0.,
-        2.,
-        &Fret::new(pos.fret, pos.string..pos.string + 1),
-        |f| fretted = Some(f),
-    );
+    fretboard
+        .inner
+        .render_single_fretted(0., 0., 2., fret, |f| fretted = Some(f));
     fretted.unwrap().into()
 }
