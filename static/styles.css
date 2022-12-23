@@ -24,3 +24,7 @@ rect {
 rect:hover {
   fill: blue;
 }
+
+.marker {
+  fill: blue;
+}

@@ -37,6 +37,21 @@ pub struct Fretted {
     lines: Option<Box<[JsValue]>>,
 }
 
+impl From<fretboard::Fretted> for Fretted {
+    fn from(fretted: fretboard::Fretted) -> Self {
+        match fretted {
+            fretboard::Fretted::Cross { lines } => Fretted {
+                rectangle: None,
+                lines: Some(Box::new([])),
+            },
+            fretboard::Fretted::Rectangle(rectangle) => Fretted {
+                rectangle: Some(rectangle),
+                lines: None,
+            },
+        }
+    }
+}
+
 #[wasm_bindgen]
 pub fn fretted_rectangle(fretted: &Fretted) -> Option<Rectangle> {
     fretted.rectangle.clone()
@@ -60,4 +75,31 @@ pub fn fretboard_fretted(fretboard: &Fretboard) -> Box<[JsValue]> {
     });
 
     vec.into_boxed_slice()
+}
+
+#[wasm_bindgen]
+pub struct Pos {
+    pub string: u8,
+    pub fret: u8,
+}
+
+#[wasm_bindgen]
+pub fn fretboard_pos(fretboard: &Fretboard, x: f64, y: f64) -> Option<Pos> {
+    fretboard
+        .inner
+        .pos(x, y)
+        .map(|(string, fret)| Pos { string, fret })
+}
+
+#[wasm_bindgen]
+pub fn fretboard_render_fretted(fretboard: &Fretboard, pos: &Pos) -> Fretted {
+    let mut fretted = None;
+    fretboard.inner.render_single_fretted(
+        0.,
+        0.,
+        2.,
+        &Fret::new(pos.fret, pos.string..pos.string + 1),
+        |f| fretted = Some(f),
+    );
+    fretted.unwrap().into()
 }
