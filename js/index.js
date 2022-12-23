@@ -1,12 +1,21 @@
 import React, { useState } from "react";
-import { render } from "../pkg/index.js";
+import {
+  fretboard_new,
+  fretboard_grid,
+  fretboard_fretted,
+  fretted_rectangle,
+} from "../pkg/index.js";
 import ReactDOM from "react-dom";
 
 function App() {
   const width = 500;
   const height = 300;
 
-  const [lines, setLines] = useState(render(width, height));
+  const [fretboard, setFretboard] = useState(fretboard_new(width, height));
+
+  const [lines, setLines] = useState(fretboard_grid(fretboard));
+
+  const [fretted, setFretted] = useState(fretboard_fretted(fretboard));
 
   return (
     <svg width={width} height={height}>
@@ -20,6 +29,22 @@ function App() {
           stroke={"#000"}
         />
       ))}
+      {fretted.map((fretted) => {
+        const rectangle = fretted_rectangle(fretted);
+
+        if (rectangle != null) {
+          return (
+            <rect
+              x={rectangle.x}
+              y={rectangle.y}
+              width={rectangle.width}
+              height={rectangle.height}
+              rx={rectangle.height / 2}
+              fill="#000"
+            />
+          );
+        }
+      })}
     </svg>
   );
 }

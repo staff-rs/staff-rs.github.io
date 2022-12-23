@@ -1,4 +1,4 @@
-use staff::render::fretboard::{self, Fretboard};
+use staff::render::fretboard::{self, Fret, Line, Rectangle};
 use wasm_bindgen::prelude::*;
 
 // When the `wee_alloc` feature is enabled, this uses `wee_alloc` as the global
@@ -10,76 +10,54 @@ use wasm_bindgen::prelude::*;
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
 #[wasm_bindgen]
-pub struct Line {
-    pub x1: f64,
-    pub y1: f64,
-    pub x2: f64,
-    pub y2: f64,
-    pub stroke_width: f64,
-}
 
-impl Line {
-    pub fn new(x1: f64, y1: f64, x2: f64, y2: f64, stroke_width: f64) -> Self {
-        Self {
-            x1,
-            y1,
-            x2,
-            y2,
-            stroke_width,
-        }
-    }
+pub struct Fretboard {
+    inner: fretboard::Fretboard,
 }
 
 #[wasm_bindgen]
-pub fn render(width: f64, height: f64) -> Box<[JsValue]> {
-    let fretboard = Fretboard::builder().build(width, height);
+pub fn fretboard_new(width: f64, height: f64) -> Fretboard {
+    let mut inner = fretboard::Fretboard::builder().build(width, height);
+    inner.push(Fret::new(0, 3..3)).unwrap();
+    inner.push(Fret::new(2, 0..1)).unwrap();
+    inner.push(Fret::new(1, 0..3)).unwrap();
+    Fretboard { inner: inner }
+}
 
-    let x = 0.;
-    let mut y = 0.;
-    let stroke_width = 2.;
+#[wasm_bindgen]
+pub fn fretboard_grid(fretboard: &Fretboard) -> Box<[JsValue]> {
     let mut lines = Vec::new();
-
-    for idx in 0..fretboard.builder.strings {
-        let line_x = x + fretboard.fret_width * idx as f64;
-        lines.push(
-            Line::new(
-                line_x,
-                y + fretboard.fret_height,
-                line_x,
-                fretboard.height - fretboard.builder.padding,
-                stroke_width,
-            )
-            .into(),
-        );
-    }
-
-    let line_y = y + fretboard.fret_height;
-    lines.push(
-        Line::new(
-            x - stroke_width / 2.,
-            line_y,
-            x + (fretboard.fret_width * (fretboard.builder.strings - 1) as f64) + stroke_width / 2.,
-            line_y,
-            stroke_width * 2.,
-        )
-        .into(),
-    );
-    y += stroke_width;
-
-    for idx in 1..fretboard.builder.fret_count {
-        let line_y = line_y + fretboard.fret_height * idx as f64;
-        lines.push(
-            Line::new(
-                x - stroke_width / 2.,
-                line_y,
-                x + fretboard.fret_width * (fretboard.builder.strings - 1) as f64
-                    + stroke_width / 2.,
-                line_y,
-                stroke_width,
-            )
-            .into(),
-        );
-    }
-
+    fretboard.inner.render_grid(|line| lines.push(line.into()));
     lines.into_boxed_slice()
+}
+
+#[wasm_bindgen]
+pub struct Fretted {
+    rectangle: Option<Rectangle>,
+    lines: Option<Box<[JsValue]>>,
+}
+
+#[wasm_bindgen]
+pub fn fretted_rectangle(fretted: &Fretted) -> Option<Rectangle> {
+    fretted.rectangle.clone()
+}
+
+#[wasm_bindgen]
+pub fn fretboard_fretted(fretboard: &Fretboard) -> Box<[JsValue]> {
+    let mut vec = Vec::new();
+    fretboard.inner.render_fretted(0., 0., 2., |fretted| {
+        let fretted = match fretted {
+            fretboard::Fretted::Cross { lines } => Fretted {
+                rectangle: None,
+                lines: Some(Box::new([])),
+            },
+            fretboard::Fretted::Rectangle(rectangle) => Fretted {
+                rectangle: Some(rectangle),
+                lines: None,
+            },
+        };
+        vec.push(fretted.into())
+    });
+
+    vec.into_boxed_slice()
 }

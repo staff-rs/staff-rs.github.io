@@ -10,3 +10,17 @@ li {
 html {
   font-family: monospace;
 }
+
+#app {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+rect {
+  transition: all 100ms;
+}
+
+rect:hover {
+  fill: blue;
+}
