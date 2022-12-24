@@ -38,14 +38,16 @@ rect:hover {
 
 .slider .label {
   position: absolute;
+  top: 20px;
   font-size: 18px;
-  line-height: 40px;
+  line-height: 24px;
   transition: all 100ms;
 }
 
 .slider[data-is-active="true"] .label {
+  top: 0;
   font-size: 12px;
-  line-height: 20px;
+  line-height: 18px;
 }
 
 .slider .bars {
