@@ -19,51 +19,66 @@ function App() {
   const currentRef = useRef(null);
 
   return (
-    <svg
-      ref={currentRef}
-      width={width}
-      height={height}
-      onMouseMove={(event) => {
-        const boundingBox = currentRef.current.getBoundingClientRect();
-        const x = event.clientX - boundingBox.left;
-        const y = event.clientY - boundingBox.top;
+    <div>
+      <input
+        type="number"
+        value={fretboard.strings}
+        onChange={(event) => {
+          event.preventDefault();
 
-        let fret;
-        if (!isMouseDown) {
-          fret = fretboard.pos(x, y);
-        } else {
-          fret = fretboard.extend_pos(currentFret, x, y);
-        }
+          fretboard.set_strings(event.target.value);
+          setFretboard(fretboard);
+          setLines(fretboard.grid());
+          setFretted(fretboard.fretted());
+        }}
+      />
 
-        setCurrentFret(fret);
-        setMarker(fretboard.render_fretted(fret));
-      }}
-      onMouseDown={(event) => {
-        setIsMouseDown(true);
-      }}
-      onMouseUp={(event) => {
-        setIsMouseDown(false);
+      <svg
+        ref={currentRef}
+        width={width}
+        height={height}
+        onMouseMove={(event) => {
+          const boundingBox = currentRef.current.getBoundingClientRect();
+          const x = event.clientX - boundingBox.left;
+          const y = event.clientY - boundingBox.top;
 
-        fretboard.push_or_remove(currentFret);
-        setFretted(fretboard.fretted());
-        setCurrentFret(null);
-      }}
-    >
-      {lines.map((line) => (
-        <line
-          x1={line.x1}
-          y1={line.y1}
-          x2={line.x2}
-          y2={line.y2}
-          strokeWidth={line.stroke_width}
-          stroke={"#000"}
-        />
-      ))}
-      {fretted.map((fretted, idx) => (
-        <Fretted key={idx} fretted={fretted} className="" />
-      ))}
-      {marker != null && <Fretted fretted={marker} className="marker" />}
-    </svg>
+          let fret;
+          if (!isMouseDown) {
+            fret = fretboard.pos(x, y);
+          } else {
+            fret = fretboard.extend_pos(currentFret, x, y);
+          }
+
+          setCurrentFret(fret);
+          setMarker(fretboard.render_fretted(fret));
+        }}
+        onMouseDown={(event) => {
+          setIsMouseDown(true);
+        }}
+        onMouseUp={(event) => {
+          setIsMouseDown(false);
+
+          fretboard.push_or_remove(currentFret);
+          setFretted(fretboard.fretted());
+          setCurrentFret(null);
+        }}
+      >
+        {lines.map((line) => (
+          <line
+            x1={line.x1}
+            y1={line.y1}
+            x2={line.x2}
+            y2={line.y2}
+            strokeWidth={line.stroke_width}
+            stroke={"#000"}
+          />
+        ))}
+        {fretted.map((fretted, idx) => (
+          <Fretted key={idx} fretted={fretted} className="" />
+        ))}
+        {marker != null && <Fretted fretted={marker} className="marker" />}
+      </svg>
+    </div>
   );
 }
 

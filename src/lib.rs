@@ -22,10 +22,19 @@ impl Fretboard {
         Self { inner }
     }
 
+    #[wasm_bindgen(getter)]
+    pub fn strings(&self) -> u8 {
+        self.inner.builder.strings
+    }
+
     pub fn push_or_remove(&mut self, fret: &Fret) {
         if let Some(idx) = self.inner.push(fret.clone()) {
             self.inner.frets.remove(idx);
         }
+    }
+
+    pub fn set_strings(&mut self, strings: u8) {
+        self.inner.shrink_strings(strings);
     }
 
     pub fn render_fretted(&self, fret: &Fret) -> Fretted {
