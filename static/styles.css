@@ -21,14 +21,11 @@ svg {
   cursor: pointer;
 }
 
-rect {
-  transition: all 100ms;
-}
-
 rect:hover {
   fill: blue;
 }
 
 .marker {
   fill: blue;
+  transition: all 100ms;
 }

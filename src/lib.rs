@@ -10,7 +10,6 @@ use wasm_bindgen::prelude::*;
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
 #[wasm_bindgen]
-
 pub struct Fretboard {
     inner: fretboard::Fretboard,
 }
@@ -19,15 +18,14 @@ pub struct Fretboard {
 impl Fretboard {
     #[wasm_bindgen(constructor)]
     pub fn new(width: f64, height: f64) -> Self {
-        let mut inner = fretboard::Fretboard::builder().build(width, height);
-        inner.push(Fret::new(0, 3..3)).unwrap();
-        inner.push(Fret::new(2, 0..1)).unwrap();
-        inner.push(Fret::new(1, 0..3)).unwrap();
+        let inner = fretboard::Fretboard::builder().build(width, height);
         Self { inner }
     }
 
-    pub fn push(&mut self, fret: &Fret) {
-        self.inner.push(fret.clone()).ok();
+    pub fn push_or_remove(&mut self, fret: &Fret) {
+        if let Some(idx) = self.inner.push(fret.clone()) {
+            self.inner.frets.remove(idx);
+        }
     }
 
     pub fn render_fretted(&self, fret: &Fret) -> Fretted {
@@ -71,7 +69,7 @@ impl Fretboard {
     pub fn extend_pos(&self, fret: &Fret, x: f64, y: f64) -> Option<Fret> {
         self.inner
             .pos(x, y)
-            .map(|(string, pos)| Fret::new(pos, fret.strings.start..string + 1))
+            .map(|(string, pos)| Fret::new(pos, fret.strings().start..string + 1))
     }
 
     pub fn grid(&self) -> Box<[JsValue]> {

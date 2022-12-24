@@ -44,7 +44,7 @@ function App() {
       onMouseUp={(event) => {
         setIsMouseDown(false);
 
-        fretboard.push(currentFret);
+        fretboard.push_or_remove(currentFret);
         setFretted(fretboard.fretted());
         setCurrentFret(null);
       }}
@@ -59,8 +59,8 @@ function App() {
           stroke={"#000"}
         />
       ))}
-      {fretted.map((fretted) => (
-        <Fretted fretted={fretted} className="" />
+      {fretted.map((fretted, idx) => (
+        <Fretted key={idx} fretted={fretted} className="" />
       ))}
       {marker != null && <Fretted fretted={marker} className="marker" />}
     </svg>
