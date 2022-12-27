@@ -30,6 +30,11 @@ impl Fretboard {
         self.renderer.diagram.strings()
     }
 
+    #[wasm_bindgen(getter)]
+    pub fn frets(&self) -> u8 {
+        self.renderer.diagram.frets()
+    }
+
     pub fn push(&mut self, range: &Range) {
         if let Some(index) = range
             .into_point()
@@ -43,6 +48,10 @@ impl Fretboard {
 
     pub fn set_strings(&mut self, strings: u8) {
         self.renderer.set_strings(strings);
+    }
+
+    pub fn set_frets(&mut self, frets: u8) {
+        self.renderer.set_frets(frets);
     }
 
     pub fn render_fretted(&self, range: &Range) -> Fretted {

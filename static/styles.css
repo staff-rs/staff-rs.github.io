@@ -18,11 +18,26 @@ html {
 }
 
 svg {
+  margin: auto;
   cursor: pointer;
 }
 
 rect:hover {
   fill: blue;
+}
+
+.app {
+  display: flex;
+  flex-direction: row;
+  width: 100vw;
+  margin: auto;
+}
+
+.sidebar {
+  width: 200px;
+  height: 100vh;
+  padding: 0 50px;
+  background: #e7e7e7;
 }
 
 .marker {

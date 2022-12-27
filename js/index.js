@@ -67,19 +67,34 @@ function App() {
   const currentRef = useRef(null);
 
   return (
-    <div>
-      <Slider
-        lable={"Strings"}
-        value={fretboard.strings}
-        setValue={(value) => {
-          fretboard.set_strings(value);
-          setFretboard(fretboard);
-          setLines(fretboard.grid());
-          setFretted(fretboard.fretted());
-        }}
-        min={3}
-        max={8}
-      />
+    <div className="app">
+      <div className="sidebar">
+        <Slider
+          lable={"Strings"}
+          value={fretboard.strings}
+          setValue={(value) => {
+            fretboard.set_strings(value);
+            setFretboard(fretboard);
+            setLines(fretboard.grid());
+            setFretted(fretboard.fretted());
+          }}
+          min={3}
+          max={8}
+        />
+
+        <Slider
+          lable={"Frets"}
+          value={fretboard.frets}
+          setValue={(value) => {
+            fretboard.set_frets(value);
+            setFretboard(fretboard);
+            setLines(fretboard.grid());
+            setFretted(fretboard.fretted());
+          }}
+          min={3}
+          max={8}
+        />
+      </div>
 
       <svg
         ref={currentRef}
