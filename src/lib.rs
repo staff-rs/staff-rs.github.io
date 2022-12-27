@@ -30,8 +30,15 @@ impl Fretboard {
         self.renderer.diagram.strings()
     }
 
-    pub fn push_or_remove(&mut self, range: &Range) {
-        self.renderer.diagram.insert(range.clone());
+    pub fn push(&mut self, range: &Range) {
+        if let Some(index) = range
+            .into_point()
+            .and_then(|_| self.renderer.diagram.intersections(range).next())
+        {
+            self.renderer.diagram.remove(index);
+        } else {
+            self.renderer.diagram.insert(range.clone());
+        }
     }
 
     pub fn set_strings(&mut self, strings: u8) {

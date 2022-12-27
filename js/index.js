@@ -105,7 +105,7 @@ function App() {
         onMouseUp={(event) => {
           setIsMouseDown(false);
 
-          fretboard.push_or_remove(currentRange);
+          fretboard.push(currentRange);
           setFretted(fretboard.fretted());
           setCurrentRange(null);
         }}
