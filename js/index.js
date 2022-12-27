@@ -61,7 +61,7 @@ function App() {
   const [fretted, setFretted] = useState(fretboard.fretted());
 
   const [isMouseDown, setIsMouseDown] = useState(false);
-  const [currentFret, setCurrentFret] = useState(null);
+  const [currentRange, setCurrentRange] = useState(null);
   const [marker, setMarker] = useState(null);
 
   const currentRef = useRef(null);
@@ -90,15 +90,14 @@ function App() {
           const x = event.clientX - boundingBox.left;
           const y = event.clientY - boundingBox.top;
 
-          let fret;
-          if (!isMouseDown) {
-            fret = fretboard.pos(x, y);
-          } else {
-            fret = fretboard.extend_pos(currentFret, x, y);
+          let range = fretboard.pos(x, y);
+          if (currentRange != null && isMouseDown) {
+            range.start = Math.min(range.start, currentRange.start);
+            range.end = Math.max(range.end, currentRange.end);
           }
 
-          setCurrentFret(fret);
-          setMarker(fretboard.render_fretted(fret));
+          setCurrentRange(range);
+          setMarker(fretboard.render_fretted(range));
         }}
         onMouseDown={(event) => {
           setIsMouseDown(true);
@@ -106,9 +105,9 @@ function App() {
         onMouseUp={(event) => {
           setIsMouseDown(false);
 
-          fretboard.push_or_remove(currentFret);
+          fretboard.push_or_remove(currentRange);
           setFretted(fretboard.fretted());
-          setCurrentFret(null);
+          setCurrentRange(null);
         }}
       >
         {lines.map((line) => (

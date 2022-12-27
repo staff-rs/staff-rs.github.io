@@ -1,4 +1,7 @@
-use staff::render::fretboard::{self, Fret, Line, Rectangle};
+use staff::{
+    fretboard::{self, render::Marker, Diagram, Range, Renderer},
+    render::Rectangle,
+};
 use wasm_bindgen::prelude::*;
 
 // When the `wee_alloc` feature is enabled, this uses `wee_alloc` as the global
@@ -11,44 +14,42 @@ static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
 #[wasm_bindgen]
 pub struct Fretboard {
-    inner: fretboard::Fretboard,
+    renderer: Renderer,
 }
 
 #[wasm_bindgen]
 impl Fretboard {
     #[wasm_bindgen(constructor)]
     pub fn new(width: f64, height: f64) -> Self {
-        let inner = fretboard::Fretboard::builder().build(width, height);
-        Self { inner }
+        let renderer = Renderer::new(Diagram::new(6, 6, 3), width, height);
+        Self { renderer }
     }
 
     #[wasm_bindgen(getter)]
     pub fn strings(&self) -> u8 {
-        self.inner.builder.strings
+        self.renderer.diagram.strings()
     }
 
-    pub fn push_or_remove(&mut self, fret: &Fret) {
-        if let Some(idx) = self.inner.push(fret.clone()) {
-            self.inner.frets.remove(idx);
-        }
+    pub fn push_or_remove(&mut self, range: &Range) {
+        self.renderer.diagram.insert(range.clone());
     }
 
     pub fn set_strings(&mut self, strings: u8) {
-        self.inner.shrink_strings(strings);
+        self.renderer.set_strings(strings);
     }
 
-    pub fn render_fretted(&self, fret: &Fret) -> Fretted {
+    pub fn render_fretted(&self, range: &Range) -> Fretted {
         let mut fretted = None;
-        self.inner
-            .render_single_fretted(0., 0., 2., fret, |f| fretted = Some(f));
+        self.renderer
+            .render_single_fretted(0., 0., 2., range, |f| fretted = Some(f));
         fretted.unwrap().into()
     }
 
     pub fn fretted(&self) -> Box<[JsValue]> {
         let mut vec = Vec::new();
-        self.inner.render_fretted(0., 0., 2., |fretted| {
+        self.renderer.render_fretted(0., 0., 2., |fretted| {
             let fretted = match fretted {
-                fretboard::Fretted::Cross { lines } => Fretted {
+                Marker::Cross { lines } => Fretted {
                     rectangle: None,
                     lines: Some(
                         lines
@@ -58,7 +59,7 @@ impl Fretboard {
                             .into_boxed_slice(),
                     ),
                 },
-                fretboard::Fretted::Rectangle(rectangle) => Fretted {
+                Marker::Rectangle(rectangle) => Fretted {
                     rectangle: Some(rectangle),
                     lines: None,
                 },
@@ -69,21 +70,15 @@ impl Fretboard {
         vec.into_boxed_slice()
     }
 
-    pub fn pos(&self, x: f64, y: f64) -> Option<Fret> {
-        self.inner
-            .pos(x, y)
-            .map(|(string, fret)| Fret::new(fret, string..string + 1))
-    }
-
-    pub fn extend_pos(&self, fret: &Fret, x: f64, y: f64) -> Option<Fret> {
-        self.inner
-            .pos(x, y)
-            .map(|(string, pos)| Fret::new(pos, fret.strings().start..string + 1))
+    pub fn pos(&self, x: f64, y: f64) -> Range {
+        let (fret, string) = self.renderer.pos(x, y);
+        Range::point(fret, string)
     }
 
     pub fn grid(&self) -> Box<[JsValue]> {
         let mut lines = Vec::new();
-        self.inner.render_grid(|line| lines.push(line.into()));
+        self.renderer
+            .render_grid(0., |line| lines.push(line.into()));
         lines.into_boxed_slice()
     }
 }
@@ -107,14 +102,14 @@ impl Fretted {
     }
 }
 
-impl From<fretboard::Fretted> for Fretted {
-    fn from(fretted: fretboard::Fretted) -> Self {
-        match fretted {
-            fretboard::Fretted::Cross { lines } => Fretted {
+impl From<Marker> for Fretted {
+    fn from(marker: Marker) -> Self {
+        match marker {
+            Marker::Cross { lines } => Fretted {
                 rectangle: None,
                 lines: Some(Box::new([])),
             },
-            fretboard::Fretted::Rectangle(rectangle) => Fretted {
+            Marker::Rectangle(rectangle) => Fretted {
                 rectangle: Some(rectangle),
                 lines: None,
             },
