@@ -175,6 +175,10 @@ impl Pitch {
     pub fn to_string(&self) -> String {
         self.inner.to_string()
     }
+
+    pub fn into_byte(&self) -> u8 {
+        self.inner.into_byte()
+    }
 }
 
 #[wasm_bindgen]

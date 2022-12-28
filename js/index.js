@@ -93,7 +93,6 @@ function strum(fretboard) {
   });
 }
 
-
 function mute() {
   dampening = 0.89;
 }
@@ -169,25 +168,13 @@ function App() {
 
   return (
     <div>
-      <div className="header">
-        <div
-          className="button filled"
-          onClick={() => {
-           playChord(fretboard)
-          }}
-        >
-          Play
-        </div>
-        <div className="button">Download</div>
-        <div className="button">Share</div>
-      </div>
       <div className="app">
         <div className="sidebar">
           <ul className="chips">
             {roots().map((pitch) => (
               <li
                 onClick={() => setRoot(pitch)}
-                data-is-selected={pitch == root}
+                data-is-selected={pitch.into_byte() === root.into_byte()}
               >
                 {pitch.to_string()}
               </li>
@@ -231,62 +218,79 @@ function App() {
             min={0}
             max={24}
           />
-        </div>
 
-        <div className="diagram">
-          <div className="wrap">
-            <div className="starting-fret">
-              {fretboard.starting_fret != 0 && fretboard.starting_fret}
-            </div>
-            <svg
-              ref={currentRef}
-              width={width}
-              height={height}
-              onMouseMove={(event) => {
-                const boundingBox = currentRef.current.getBoundingClientRect();
-                const x = event.clientX - boundingBox.left;
-                const y = event.clientY - boundingBox.top;
-
-                let range = fretboard.pos(x, y);
-                if (currentRange != null && isMouseDown) {
-                  range.start = Math.min(range.start, currentRange.start);
-                  range.end = Math.max(range.end, currentRange.end);
-                }
-
-                setCurrentRange(range);
-                setMarker(fretboard.render_fretted(range));
-              }}
-              onMouseDown={(event) => {
-                setIsMouseDown(true);
-              }}
-              onMouseUp={(event) => {
-                setIsMouseDown(false);
-
-                fretboard.push(currentRange);
-                setFretted(fretboard.fretted());
-                setCurrentRange(null);
-              }}
-            >
-              {lines.map((line) => (
-                <line
-                  x1={line.x1}
-                  y1={line.y1}
-                  x2={line.x2}
-                  y2={line.y2}
-                  strokeWidth={line.stroke_width}
-                  stroke={"#000"}
-                />
-              ))}
-              {fretted.map((fretted, idx) => (
-                <Fretted key={idx} fretted={fretted} className="" />
-              ))}
-              {marker != null && (
-                <Fretted fretted={marker} className="marker" />
-              )}
-            </svg>
+          <div
+            className="button filled play"
+            onClick={() => {
+              playChord(fretboard);
+            }}
+          >
+            Play
           </div>
         </div>
-      </div>{" "}
+
+        <div className="content">
+          <div className="header">
+            <div className="button">Download</div>
+            <div className="button">Share</div>
+          </div>
+
+          <div className="diagram">
+            <div className="wrap">
+              <div className="starting-fret">
+                {fretboard.starting_fret != 0 && fretboard.starting_fret}
+              </div>
+              <svg
+                ref={currentRef}
+                width={width}
+                height={height}
+                onMouseMove={(event) => {
+                  const boundingBox =
+                    currentRef.current.getBoundingClientRect();
+                  const x = event.clientX - boundingBox.left;
+                  const y = event.clientY - boundingBox.top;
+
+                  let range = fretboard.pos(x, y);
+                  if (currentRange != null && isMouseDown) {
+                    range.start = Math.min(range.start, currentRange.start);
+                    range.end = Math.max(range.end, currentRange.end);
+                  }
+
+                  setCurrentRange(range);
+                  setMarker(fretboard.render_fretted(range));
+                }}
+                onMouseDown={(event) => {
+                  setIsMouseDown(true);
+                }}
+                onMouseUp={(event) => {
+                  setIsMouseDown(false);
+
+                  fretboard.push(currentRange);
+                  setFretted(fretboard.fretted());
+                  setCurrentRange(null);
+                }}
+              >
+                {lines.map((line) => (
+                  <line
+                    x1={line.x1}
+                    y1={line.y1}
+                    x2={line.x2}
+                    y2={line.y2}
+                    strokeWidth={line.stroke_width}
+                    stroke={"#000"}
+                  />
+                ))}
+                {fretted.map((fretted, idx) => (
+                  <Fretted key={idx} fretted={fretted} className="" />
+                ))}
+                {marker != null && (
+                  <Fretted fretted={marker} className="marker" />
+                )}
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
