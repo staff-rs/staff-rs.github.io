@@ -1,6 +1,9 @@
 use staff::{
-    fretboard::{self, render::Marker, Diagram, Range, Renderer},
+    fretboard::{render::Marker, Diagram, Range, Renderer, STANDARD},
+    midi::{MidiNote, Octave},
     render::Rectangle,
+    set::PitchSet,
+    Chord,
 };
 use wasm_bindgen::prelude::*;
 
@@ -33,6 +36,16 @@ impl Fretboard {
     #[wasm_bindgen(getter)]
     pub fn frets(&self) -> u8 {
         self.renderer.diagram.frets()
+    }
+
+    #[wasm_bindgen(getter)]
+    pub fn starting_fret(&self) -> u8 {
+        self.renderer.diagram.starting_fret
+    }
+
+    #[wasm_bindgen(setter)]
+    pub fn set_starting_fret(&mut self, starting_fret: u8) {
+        self.renderer.diagram.starting_fret = starting_fret;
     }
 
     pub fn push(&mut self, range: &Range) {
@@ -97,6 +110,13 @@ impl Fretboard {
             .render_grid(0., |line| lines.push(line.into()));
         lines.into_boxed_slice()
     }
+
+    pub fn chord(&self, root: &Pitch) -> Option<String> {
+        let midi_notes = self.renderer.diagram.midi_notes(STANDARD);
+        Chord::from_midi(MidiNote::new(root.inner, Octave::FOUR), midi_notes)
+            .as_ref()
+            .map(Chord::to_string)
+    }
 }
 
 #[wasm_bindgen]
@@ -131,4 +151,33 @@ impl From<Marker> for Fretted {
             },
         }
     }
+}
+
+#[wasm_bindgen]
+#[derive(Clone, Copy)]
+pub struct Pitch {
+    inner: staff::Pitch,
+}
+
+#[wasm_bindgen]
+impl Pitch {
+    #[wasm_bindgen(constructor)]
+    pub fn new() -> Self {
+        Self {
+            inner: staff::Pitch::C,
+        }
+    }
+
+    pub fn to_string(&self) -> String {
+        self.inner.to_string()
+    }
+}
+
+#[wasm_bindgen]
+pub fn roots() -> Box<[JsValue]> {
+    PitchSet::all()
+        .into_iter()
+        .map(|inner| Pitch { inner }.into())
+        .collect::<Vec<_>>()
+        .into_boxed_slice()
 }

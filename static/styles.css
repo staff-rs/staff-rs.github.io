@@ -17,8 +17,22 @@ html {
   align-items: center;
 }
 
-svg {
+.diagram {
+  display: flex;
+  flex-direction: column;
   margin: auto;
+}
+
+.diagram .wrap {
+  display: flex;
+  flex-direction: row;
+}
+
+.diagram .starting-fret {
+  font-size: 72px;
+}
+
+svg {
   cursor: pointer;
 }
 
@@ -131,4 +145,23 @@ rect:hover {
   height: 20px;
   background: blue;
   border-radius: 50%;
+}
+
+.name {
+  font-size: 48px;
+  margin-bottom: 20px;
+}
+
+.chips {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.chips li {
+  padding: 0 10px;
+  line-height: 20px;
+  border: 2px solid #777;
+  border-radius: 5px;
 }

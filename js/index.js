@@ -1,5 +1,5 @@
-import React, { useRef, useState } from "react";
-import { Fretboard } from "../pkg/index.js";
+import React, { useMemo, useRef, useState } from "react";
+import { Fretboard, Pitch, roots } from "../pkg/index.js";
 import ReactDOM from "react-dom";
 
 function Slider({ lable, value, setValue, min, max }) {
@@ -63,12 +63,19 @@ function App() {
   const [isMouseDown, setIsMouseDown] = useState(false);
   const [currentRange, setCurrentRange] = useState(null);
   const [marker, setMarker] = useState(null);
+  const [root, setRoot] = useState(new Pitch());
 
   const currentRef = useRef(null);
 
   return (
     <div className="app">
       <div className="sidebar">
+        <ul className="chips">
+          {roots().map((pitch) => (
+            <li onClick={() => setRoot(pitch)}>{pitch.to_string()}</li>
+          ))}
+        </ul>
+
         <Slider
           lable={"Strings"}
           value={fretboard.strings}
@@ -94,52 +101,71 @@ function App() {
           min={3}
           max={8}
         />
+        <Slider
+          lable={"Starting Fret"}
+          value={fretboard.starting_fret}
+          setValue={(value) => {
+            fretboard.starting_fret = value;
+            setFretboard(fretboard);
+            setLines(fretboard.grid());
+            setFretted(fretboard.fretted());
+          }}
+          min={0}
+          max={24}
+        />
       </div>
 
-      <svg
-        ref={currentRef}
-        width={width}
-        height={height}
-        onMouseMove={(event) => {
-          const boundingBox = currentRef.current.getBoundingClientRect();
-          const x = event.clientX - boundingBox.left;
-          const y = event.clientY - boundingBox.top;
+      <div className="diagram">
+        <div className="wrap">
+          <div className="starting-fret">
+            {fretboard.starting_fret != 0 && fretboard.starting_fret}
+          </div>
+          <svg
+            ref={currentRef}
+            width={width}
+            height={height}
+            onMouseMove={(event) => {
+              const boundingBox = currentRef.current.getBoundingClientRect();
+              const x = event.clientX - boundingBox.left;
+              const y = event.clientY - boundingBox.top;
 
-          let range = fretboard.pos(x, y);
-          if (currentRange != null && isMouseDown) {
-            range.start = Math.min(range.start, currentRange.start);
-            range.end = Math.max(range.end, currentRange.end);
-          }
+              let range = fretboard.pos(x, y);
+              if (currentRange != null && isMouseDown) {
+                range.start = Math.min(range.start, currentRange.start);
+                range.end = Math.max(range.end, currentRange.end);
+              }
 
-          setCurrentRange(range);
-          setMarker(fretboard.render_fretted(range));
-        }}
-        onMouseDown={(event) => {
-          setIsMouseDown(true);
-        }}
-        onMouseUp={(event) => {
-          setIsMouseDown(false);
+              setCurrentRange(range);
+              setMarker(fretboard.render_fretted(range));
+            }}
+            onMouseDown={(event) => {
+              setIsMouseDown(true);
+            }}
+            onMouseUp={(event) => {
+              setIsMouseDown(false);
 
-          fretboard.push(currentRange);
-          setFretted(fretboard.fretted());
-          setCurrentRange(null);
-        }}
-      >
-        {lines.map((line) => (
-          <line
-            x1={line.x1}
-            y1={line.y1}
-            x2={line.x2}
-            y2={line.y2}
-            strokeWidth={line.stroke_width}
-            stroke={"#000"}
-          />
-        ))}
-        {fretted.map((fretted, idx) => (
-          <Fretted key={idx} fretted={fretted} className="" />
-        ))}
-        {marker != null && <Fretted fretted={marker} className="marker" />}
-      </svg>
+              fretboard.push(currentRange);
+              setFretted(fretboard.fretted());
+              setCurrentRange(null);
+            }}
+          >
+            {lines.map((line) => (
+              <line
+                x1={line.x1}
+                y1={line.y1}
+                x2={line.x2}
+                y2={line.y2}
+                strokeWidth={line.stroke_width}
+                stroke={"#000"}
+              />
+            ))}
+            {fretted.map((fretted, idx) => (
+              <Fretted key={idx} fretted={fretted} className="" />
+            ))}
+            {marker != null && <Fretted fretted={marker} className="marker" />}
+          </svg>
+        </div>
+      </div>
     </div>
   );
 }
