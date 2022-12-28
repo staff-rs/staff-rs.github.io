@@ -111,6 +111,10 @@ impl Fretboard {
         lines.into_boxed_slice()
     }
 
+    pub fn frequencies(&self) -> Box<[f64]> {
+        self.renderer.diagram.midi_notes(STANDARD).map(|midi_note| midi_note.frequency()).collect()
+    }
+
     pub fn chord(&self, root: &Pitch) -> Option<String> {
         let midi_notes = self.renderer.diagram.midi_notes(STANDARD);
         Chord::from_midi(MidiNote::new(root.inner, Octave::FOUR), midi_notes)

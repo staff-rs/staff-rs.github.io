@@ -159,9 +159,42 @@ rect:hover {
   gap: 10px;
 }
 
+
 .chips li {
   padding: 0 10px;
   line-height: 20px;
   border: 2px solid #777;
   border-radius: 5px;
+}
+
+.chips li[data-is-selected=true] {
+  background: blue;
+}
+
+.header {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  padding: 20px;
+}
+
+.button {
+  cursor: pointer;
+  display: inline-block;
+  color: #43692A;
+  margin-left: 10px;
+  padding: 0 30px;
+  font-size: 14px;
+  line-height: 40px;
+  border-radius: 20px;
+  transition: all 100ms;
+}
+
+.button:hover {
+  background: #DCE6CD;
+}
+
+.button.filled {
+  color: #fff;
+  background: #43692A;
 }
